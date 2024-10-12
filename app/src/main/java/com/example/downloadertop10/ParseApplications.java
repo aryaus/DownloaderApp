@@ -24,6 +24,7 @@ public class ParseApplications {
         boolean status = true;
         FeedEntry currentRecord = null;
         boolean inEntry = false;
+        boolean gotImage = false;
         String textValue = "";
 
         try {
@@ -40,6 +41,11 @@ public class ParseApplications {
                         if ("entry".equalsIgnoreCase(tagName)){
                             inEntry = true;
                             currentRecord = new FeedEntry();
+                        } else if (("image".equalsIgnoreCase(tagName)) && inEntry){
+                            String imageResolution = xpp.getAttributeValue(null, "height");
+                            if (imageResolution != null){
+                                gotImage = "53".equalsIgnoreCase(imageResolution);
+                            }
                         }
                         break;
                     case XmlPullParser.TEXT:
@@ -60,7 +66,9 @@ public class ParseApplications {
                             } else if("summary".equalsIgnoreCase(tagName)){
                                 currentRecord.setSummary(textValue);
                             } else if("image".equalsIgnoreCase(tagName)){
-                                currentRecord.setImageURL(textValue);
+                                if (gotImage) {
+                                    currentRecord.setImageURL(textValue);
+                                }
                             }
                         }
                         break;
@@ -68,6 +76,10 @@ public class ParseApplications {
                         // Nothing else to do.
                 }
                 eventType = xpp.next();
+            }
+            for (FeedEntry app: applications){
+                Log.d(TAG, "parse: ***************");
+                Log.d(TAG, app.toString());
             }
         } catch (Exception e){
             status = false;
