@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "onCreate: starting AsyncTask");
         DownloadData downloadData = new DownloadData();
-        downloadData.execute("URL goes here");
+        downloadData.execute("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml");
         Log.d(TAG, "onCreate: done");
     }
 
@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             Log.d(TAG, "onPostExecute: parameter is " + s);
+            ParseApplications parseApplications = new ParseApplications();
+            parseApplications.parse(s);
         }
 
         @Override
@@ -53,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 int response = connection.getResponseCode();
                 Log.d(TAG, "downloadXML: response code was " + response);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
                 int charsRead;
                 char[] inputBuffer = new char[500];
@@ -67,11 +69,16 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 reader.close();
+
+                return xmlResult.toString();
             } catch(MalformedURLException e) {
                 Log.e(TAG, "downloadXML: Invalid URL " + e.getMessage());
             } catch (IOException e){
                 Log.e(TAG, "downloadXML: IO Exception reading data: " + e.getMessage());
+            } catch (SecurityException e){
+                Log.e(TAG, "downloadXML: Security Exception. Need premission? " + e.getMessage());
             }
+            return null;
         }
 
     }
